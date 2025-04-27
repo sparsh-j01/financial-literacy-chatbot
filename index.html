@@ -82,6 +82,10 @@
             color: #075e54;
             cursor: pointer;
         }
+        .loading {
+            text-align: center;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
@@ -96,15 +100,17 @@
         </div>
         <div class="chat-messages" id="chat-messages"></div>
         <div class="input-container">
-            <input type="text" id="message-input" placeholder="Type your message...">
-            <button onclick="sendMessage()">Send</button>
+            <input type="text" id="message-input" placeholder="Type your message..." aria-label="Message input">
+            <button onclick="sendMessage()" aria-label="Send message">Send</button>
         </div>
+        <div class="loading" id="loading" style="display: none;">Loading...</div>
     </div>
 
     <script>
         const chatMessages = document.getElementById('chat-messages');
         const messageInput = document.getElementById('message-input');
         const teluguToggle = document.getElementById('telugu-toggle');
+        const loadingIndicator = document.getElementById('loading');
 
         function addMessage(text, isUser) {
             const messageDiv = document.createElement('div');
@@ -123,6 +129,7 @@
 
             addMessage(message, true);
             messageInput.value = '';
+            loadingIndicator.style.display = 'block';
 
             try {
                 const response = await fetch('http://localhost:5000/webhook', {
@@ -142,6 +149,8 @@
             } catch (error) {
                 addMessage('Error: Could not connect to the server. Please make sure the backend is running.', false);
                 console.error('Error:', error);
+            } finally {
+                loadingIndicator.style.display = 'none';
             }
         }
 
@@ -153,10 +162,10 @@
 
         // Add placeholder text based on language selection
         teluguToggle.addEventListener('change', (e) => {
-            messageInput.placeholder = e.target.checked ? 
-                "మీ సందేశాన్ని టైప్ చేయండి..." : 
+            messageInput.placeholder = e.target.checked ?
+                "మీ సందేశాన్ని టైప్ చేయండి..." :
                 "Type your message...";
         });
     </script>
 </body>
-</html> 
+</html>

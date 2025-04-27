@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Literacy Chatbot Landing Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+            color: white;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        .button {
+            background: #075e54;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: background 0.3s ease;
+        }
+        .button:hover {
+            background: #128c7e;
+        }
+        .language-selector {
+            margin-bottom: 20px;
+        }
+        .language-selector select {
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #075e54;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="language-selector">
+            <label for="language-select">Choose Language:</label>
+            <select id="language-select" onchange="changeLanguage()">
+                <option value="en">English</option>
+                <option value="hi">हिन्दी</option>
+                <option value="te">తెలుగు</option>
+                <option value="ta">தமிழ்</option>
+                <option value="kn">ಕನ್ನಡ</option>
+                <option value="ml">മലയാളം</option>
+                <option value="mr">मराठी</option>
+                <option value="bn">বাংলা</option>
+                <option value="gu">ગુજરાતી</option>
+                <option value="pa">ਪੰਜਾਬੀ</option>
+                <!-- Add more languages as needed -->
+            </select>
+        </div>
+        <h1 id="welcome-message">Welcome to Financial Literacy Chatbot</h1>
+        <p id="description">Your guide to understanding finance. Get started by chatting with our AI-powered assistant.</p>
+        <button class="button" id="start-chatting-button" onclick="redirectToChatbot()">Start Chatting</button>
+    </div>
+
+    <script>
+        // Language content
+        const languageContent = {
+            en: {
+                welcomeMessage: 'Welcome to Financial Literacy Chatbot',
+                description: 'Your guide to understanding finance. Get started by chatting with our AI-powered assistant.',
+                buttonText: 'Start Chatting'
+            },
+            hi: {
+                welcomeMessage: 'फाइनेंशियल लिटरेसी चैटबॉट में आपका स्वागत है',
+                description: 'वित्त को समझने के लिए आपका मार्गदर्शक। हमारे AI सहायक के साथ चैट करके शुरू करें।',
+                buttonText: 'चैट शुरू करें'
+            },
+            te: {
+                welcomeMessage: 'ఫినాన్షియల్ లిటరేసీ ఛాట్‌బాట్‌కు స్వాగతం',
+                description: 'ఆర్థిక విషయాలను అర్థం చేసుకోవడానికి మీ మార్గదర్శకం. మీ AI సహాయకుడితో మాట్లాడటం ద్వారా ప్రారంభించండి.',
+                buttonText: 'చాట్ ప్రారంభించండి'
+            },
+            ta: {
+                welcomeMessage: 'நிதி அறிவு செய்திப் பேச் போட்டிற்கு வருக',
+                description: 'நிதியைப் புரிந்துகொள்ள உங்கள் வழிகாட்டி. எங்கள் AI உதவியாளருடன் உரையாடி தொடங்கவும்.',
+                buttonText: 'உரையாடலைத் தொடங்கு'
+            },
+            kn: {
+                welcomeMessage: 'ಹಣಕಾಸು ಸಾಕ್ಷರತೆ ಚಾಟ್‌ಬಾಟ್‌ಗೆ ಸುಸ್ವಾಗತ',
+                description: 'ಹಣಕಾಸು ಅರ್ಥಮಾಡಿಕೊಳ್ಳುವ ನಿಮ್ಮ ಮಾರ್ಗದರ್ಶಕ. ನಮ್ಮ AI ಸಹಾಯಕನೊಂದಿಗೆ ಮಾತನಾಡುವ ಮೂಲಕ ಪ್ರಾರಂಭಿಸಿ.',
+                buttonText: 'ಚಾಟ್ ಆರಂಭಿಸಿ'
+            },
+            ml: {
+                welcomeMessage: 'സാമ്പത്തിക സാക്ഷരത ചാറ്റ്ബോട്ടിലേക്ക് സ്വാഗതം',
+                description: 'സാമ്പത്തിക വിഷയങ്ങൾ മനസ്സിലാക്കാനുള്ള നിങ്ങളുടെ മാർഗ്ഗദർശകൻ. ഞങ്ങളുടെ AI സഹായിയുമായി സംഭാഷണം നടത്തി തുടങ്ങുക.',
+                buttonText: 'സംഭാഷണം ആരംഭിക്കുക'
+            },
+            mr: {
+                welcomeMessage: 'आर्थिक साक्षरता चॅटबॉट मध्ये तुम्हाला स्वागत आहे',
+                description: 'आर्थिक विषयांचे समज घेण्यासाठी तुमचा मार्गदर्शक. आमच्या AI सहाय्यकासोबत चॅट करून सुरुवात करा.',
+                buttonText: 'चॅट सुरू करा'
+            },
+            bn: {
+                welcomeMessage: 'আর্থিক সাক্ষরতা চ্যাটবটে স্বাগতম',
+                description: 'আর্থিক বিষয়গুলি বোঝার জন্য আপনার মার্গদর্শক। আমাদের AI সহায়কের সাথে চ্যাট করে শুরু করুন।',
+                buttonText: 'চ্যাট শুরু করুন'
+            },
+            gu: {
+                welcomeMessage: 'વિત્તીય સાક્ષરતા ચેટબોટમાં આપનું સ્વાગત છે',
+                description: 'વિત્તીય વિષયોને સમજવા માટે તમારો માર્ગદર્શક. અમારા AI સહાયક સાથે ચેટ કરીને શરૂઆત કરો.',
+                buttonText: 'ચેટ શરૂ કરો'
+            },
+            pa: {
+                welcomeMessage: 'ਵਿੱਤੀ ਸਾਖ਼ਰਤਾ ਚੈਟਬੋਟ ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ',
+                description: 'ਵਿੱਤੀ ਮੁੱਦਿਆਂ ਨੂੰ ਸਮਝਣ ਲਈ ਤੁਹਾਡਾ ਮਾਰਗਦਰਸ਼ਕ. ਸਾਡੇ AI ਸਹਾਇਕ ਨਾਲ ਚੈਟ ਕਰਕੇ ਸ਼ੁਰੂ ਕਰੋ.',
+                buttonText: 'ਚੈਟ ਸ਼ੁਰੂ ਕਰੋ'
+            }
+            // Add more languages as needed
+        };
+
+        // Function to change language
+        function changeLanguage() {
+            const selectedLang = document.getElementById('language-select').value;
+            document.getElementById('welcome-message').textContent = languageContent[selectedLang].welcomeMessage;
+            document.getElementById('description').textContent = languageContent[selectedLang].description;
+            document.getElementById('start-chatting-button').textContent = languageContent[selectedLang].buttonText;
+        }
+
+        // Set default language based on browser settings
+        function setDefaultLanguage() {
+            const userLang = navigator.language || navigator.userLanguage;
+            const languageSelect = document.getElementById('language-select');
+            const langCode = userLang.split('-')[0]; // Get the language code (e.g., 'en', 'hi')
+            if (languageContent[langCode]) {
+                languageSelect.value = langCode;
+            } else {
+                languageSelect.value = 'en'; // Default to English if the language is not supported
+            }
+            changeLanguage();
+        }
+
+        // Call the function to set the default language
+        setDefaultLanguage();
+
+        function redirectToChatbot() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
