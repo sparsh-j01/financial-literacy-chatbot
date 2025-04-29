@@ -4,106 +4,417 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Financial Literacy Chatbot</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f0f2f5;
+        :root {
+            --primary-color: #4e8df5;
+            --secondary-color: #e8f0fe;
+            --user-msg-color: #e3f2fd;
+            --bot-msg-color: #ffffff;
+            --text-color: #333333;
+            --light-text: #777777;
+            --border-radius: 16px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text-color);
+        }
+
         .chat-container {
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 480px;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+            max-height: 700px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
+
         .chat-header {
-            background: #075e54;
+            background: var(--primary-color);
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
+        .chat-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .chat-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-header .logo i {
+            font-size: 1.8rem;
+        }
+
+        .language-toggle {
+            position: absolute;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .language-label {
+            margin-right: 8px;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+
         .chat-messages {
-            height: 400px;
+            flex: 1;
             overflow-y: auto;
             padding: 20px;
-            background: #e5ddd5;
+            background: #f7f9fb;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
+
         .message {
-            margin-bottom: 15px;
-            max-width: 70%;
-            padding: 10px;
-            border-radius: 10px;
+            max-width: 80%;
+            padding: 16px 20px;
+            border-radius: 18px;
+            position: relative;
+            animation: fadeIn 0.3s ease-in-out;
+            line-height: 1.5;
+            font-size: 0.95rem;
         }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .user-message {
-            background: #dcf8c6;
-            margin-left: auto;
-            border-radius: 10px 0 10px 10px;
+            background: var(--user-msg-color);
+            color: var(--text-color);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
+
         .bot-message {
-            background: white;
-            border-radius: 0 10px 10px 10px;
+            background: var(--bot-msg-color);
+            color: var(--text-color);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 16px 20px;
         }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--light-text);
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .bot-avatar {
+            width: 28px;
+            height: 28px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            margin-right: 8px;
+        }
+
+        .message-container {
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 4px;
+        }
+
         .input-container {
-            padding: 15px;
+            padding: 16px;
             background: white;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
         }
+
+        .input-wrapper {
+            display: flex;
+            flex: 1;
+            background: #f0f2f5;
+            border-radius: 24px;
+            overflow: hidden;
+            padding: 4px 4px 4px 16px;
+        }
+
         input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            margin-bottom: 10px;
+            flex: 1;
+            border: none;
+            padding: 10px 0;
+            font-size: 0.95rem;
+            background: transparent;
+            outline: none;
         }
-        button {
-            background: #075e54;
+
+        .send-button {
+            background: var(--primary-color);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            transition: all 0.2s;
         }
-        button:hover {
-            background: #128c7e;
+
+        .send-button:hover {
+            transform: scale(1.05);
+            background: #4080e8;
         }
-        .error {
-            color: red;
-            padding: 10px;
-            text-align: center;
+
+        .send-button:active {
+            transform: scale(0.95);
         }
-        .language-toggle {
-            text-align: right;
-            padding: 10px;
-            background: white;
-        }
-        .language-toggle label {
-            color: #075e54;
-            cursor: pointer;
-        }
+
         .loading {
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 10px;
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 48px;
+            height: 18px;
+            position: relative;
+        }
+
+        .loader-dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            animation: loader 1.5s infinite ease-in-out;
+        }
+
+        .loader-dot:nth-child(1) {
+            left: 0;
+            animation-delay: 0s;
+        }
+
+        .loader-dot:nth-child(2) {
+            left: 18px;
+            animation-delay: 0.15s;
+        }
+
+        .loader-dot:nth-child(3) {
+            left: 36px;
+            animation-delay: 0.3s;
+        }
+
+        @keyframes loader {
+            0%, 80%, 100% { 
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 20px;
+            color: var(--light-text);
+            font-size: 0.95rem;
+        }
+
+        .typing-indicator {
+            display: flex;
+            padding: 12px 16px;
+            background: var(--bot-msg-color);
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            width: fit-content;
+            margin-top: 4px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            align-self: flex-start;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .typing-bubble {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--light-text);
+            margin: 0 2px;
+            animation: typing 1s infinite ease-in-out;
+        }
+
+        .typing-bubble:nth-child(1) { animation-delay: 0s; }
+        .typing-bubble:nth-child(2) { animation-delay: 0.1s; }
+        .typing-bubble:nth-child(3) { animation-delay: 0.2s; }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .placeholder-text {
+            color: var(--light-text);
+            cursor: text;
+        }
+
+        @media (max-width: 576px) {
+            .chat-container {
+                height: 90vh;
+                max-height: none;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            body {
+                padding: 0;
+            }
+            .message {
+                max-width: 85%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h1>Financial Literacy Chatbot</h1>
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <h1>Financial Guru</h1>
+            </div>
+            <div class="language-toggle">
+                <span class="language-label">తెలుగు</span>
+                <label class="switch">
+                    <input type="checkbox" id="telugu-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
-        <div class="language-toggle">
-            <label>
-                <input type="checkbox" id="telugu-toggle"> Use Telugu (తెలుగు)
-            </label>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="welcome-message">
+                <h3>Welcome to Financial Guru!</h3>
+                <p>I'm here to help with your financial questions. You can ask about budgeting, investing, savings, or any financial topic.</p>
+            </div>
+            <div class="message-container">
+                <div class="bot-avatar">FG</div>
+                <div class="bot-message">
+                    <span>How can I help with your financial journey today?</span>
+                    <div class="message-time">Just now</div>
+                </div>
+            </div>
         </div>
-        <div class="chat-messages" id="chat-messages"></div>
+
         <div class="input-container">
-            <input type="text" id="message-input" placeholder="Type your message..." aria-label="Message input">
-            <button onclick="sendMessage()" aria-label="Send message">Send</button>
+            <div class="input-wrapper">
+                <input type="text" id="message-input" placeholder="Type your message..." aria-label="Message input">
+                <button class="send-button" onclick="sendMessage()" aria-label="Send message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
         </div>
-        <div class="loading" id="loading" style="display: none;">Loading...</div>
+
+        <div class="loading" id="loading" style="display: none;">
+            <div class="loader">
+                <div class="loader-dot"></div>
+                <div class="loader-dot"></div>
+                <div class="loader-dot"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -112,12 +423,64 @@
         const teluguToggle = document.getElementById('telugu-toggle');
         const loadingIndicator = document.getElementById('loading');
 
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
         function addMessage(text, isUser) {
+            const messageContainer = document.createElement('div');
+            messageContainer.className = 'message-container';
+            
+            if (!isUser) {
+                const botAvatar = document.createElement('div');
+                botAvatar.className = 'bot-avatar';
+                botAvatar.textContent = 'FG';
+                messageContainer.appendChild(botAvatar);
+            }
+            
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
-            messageDiv.textContent = text;
-            chatMessages.appendChild(messageDiv);
+            
+            const messageContent = document.createElement('span');
+            messageContent.textContent = text;
+            messageDiv.appendChild(messageContent);
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = getCurrentTime();
+            messageDiv.appendChild(timeDiv);
+            
+            messageContainer.appendChild(messageDiv);
+            
+            if (isUser) {
+                messageContainer.style.justifyContent = 'flex-end';
+            }
+            
+            chatMessages.appendChild(messageContainer);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typing-indicator';
+            
+            for (let i = 0; i < 3; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'typing-bubble';
+                typingDiv.appendChild(bubble);
+            }
+            
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
         }
 
         async function sendMessage() {
@@ -129,8 +492,10 @@
 
             addMessage(message, true);
             messageInput.value = '';
-            loadingIndicator.style.display = 'block';
-
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
             try {
                 const response = await fetch('http://localhost:5000/webhook', {
                     method: 'POST',
@@ -144,13 +509,20 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
+                // Remove typing indicator before showing response
+                removeTypingIndicator();
+                
                 const data = await response.json();
-                addMessage(data.response, false);
+                
+                // Small delay to simulate human-like response timing
+                setTimeout(() => {
+                    addMessage(data.response, false);
+                }, 500);
+                
             } catch (error) {
+                removeTypingIndicator();
                 addMessage('Error: Could not connect to the server. Please make sure the backend is running.', false);
                 console.error('Error:', error);
-            } finally {
-                loadingIndicator.style.display = 'none';
             }
         }
 
@@ -165,6 +537,21 @@
             messageInput.placeholder = e.target.checked ?
                 "మీ సందేశాన్ని టైప్ చేయండి..." :
                 "Type your message...";
+                
+            // Update welcome message based on language
+            const welcomeHeader = document.querySelector('.welcome-message h3');
+            const welcomeText = document.querySelector('.welcome-message p');
+            const firstBotMessage = document.querySelector('.bot-message');
+            
+            if (e.target.checked) {
+                welcomeHeader.textContent = "ఆర్థిక గురువుకి స్వాగతం!";
+                welcomeText.textContent = "మీ ఆర్థిక ప్రశ్నలకు సహాయం చేయడానికి నేను ఇక్కడ ఉన్నాను. మీరు బడ్జెట్, పెట్టుబడి, పొదుపు లేదా ఏదైనా ఆర్థిక విషయం గురించి అడగవచ్చు.";
+                firstBotMessage.firstChild.textContent = "నేను మీ ఆర్థిక ప్రయాణంలో ఎలా సహాయం చేయగలను?";
+            } else {
+                welcomeHeader.textContent = "Welcome to Financial Guru!";
+                welcomeText.textContent = "I'm here to help with your financial questions. You can ask about budgeting, investing, savings, or any financial topic.";
+                firstBotMessage.firstChild.textContent = "How can I help with your financial journey today?";
+            }
         });
     </script>
 </body>
