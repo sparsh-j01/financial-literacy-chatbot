@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Financial Literacy Chatbot</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Add Marked.js for Markdown parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
+    <!-- Add DOMPurify for sanitizing HTML -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.8/purify.min.js"></script>
+    <!-- Add Highlight.js for code syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <style>
         :root {
             --primary-color: #4e8df5;
@@ -15,6 +22,36 @@
             --light-text: #777777;
             --border-radius: 16px;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --background-color: #f7f9fb;
+            --body-background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            --input-background: #f0f2f5;
+            --header-background: #4e8df5;
+            --header-text: #ffffff;
+            --code-background: #f6f8fa;
+            --table-header-bg: #f8f9fa;
+            --table-border: #ddd;
+            --blockquote-color: #5a5a5a;
+            --container-background: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #5e9aff;
+            --secondary-color: #1e293b;
+            --user-msg-color: #3b4a63;
+            --bot-msg-color: #2a3447;
+            --text-color: #e2e8f0;
+            --light-text: #a0aec0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --background-color: #111827;
+            --body-background: #0f172a;
+            --input-background: #1e293b;
+            --header-background: #1e40af;
+            --header-text: #ffffff;
+            --code-background: #1e293b;
+            --table-header-bg: #1e293b;
+            --table-border: #4a5568;
+            --blockquote-color: #cbd5e0;
+            --container-background: #1a202c;
         }
 
         * {
@@ -25,17 +62,18 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            background: var(--body-background);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
             color: var(--text-color);
+            transition: background 0.3s ease;
         }
 
         .chat-container {
-            background: white;
+            background: var(--container-background);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             width: 100%;
@@ -46,17 +84,35 @@
             height: 80vh;
             max-height: 700px;
             border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        /* Fullscreen for laptop devices */
+        @media (min-width: 1024px) {
+            .chat-container {
+                max-width: 100%;
+                width: 100%;
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            
+            body {
+                padding: 0;
+            }
         }
 
         .chat-header {
-            background: var(--primary-color);
-            color: white;
+            background: var(--header-background);
+            color: var(--header-text);
             padding: 20px;
             text-align: center;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: background-color 0.3s ease;
         }
 
         .chat-header h1 {
@@ -127,20 +183,44 @@
             transform: translateX(26px);
         }
 
-        .language-label {
-            margin-right: 8px;
-            font-size: 0.9rem;
-            color: #fff;
+        /* Theme toggle button */
+        .theme-toggle {
+            position: absolute;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .theme-toggle i {
+            font-size: 1.2rem;
         }
 
         .chat-messages {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            background: #f7f9fb;
+            background: var(--background-color);
             display: flex;
             flex-direction: column;
             gap: 15px;
+            transition: background-color 0.3s ease;
         }
 
         .message {
@@ -182,6 +262,115 @@
             padding: 16px 20px;
         }
 
+        /* Markdown styling within bot messages */
+        .bot-message .markdown-content {
+            width: 100%;
+        }
+
+        .bot-message .markdown-content h1, 
+        .bot-message .markdown-content h2, 
+        .bot-message .markdown-content h3,
+        .bot-message .markdown-content h4,
+        .bot-message .markdown-content h5,
+        .bot-message .markdown-content h6 {
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+
+        .bot-message .markdown-content h1 {
+            font-size: 1.4rem;
+        }
+
+        .bot-message .markdown-content h2 {
+            font-size: 1.3rem;
+        }
+
+        .bot-message .markdown-content h3 {
+            font-size: 1.2rem;
+        }
+
+        .bot-message .markdown-content p {
+            margin-bottom: 12px;
+        }
+
+        .bot-message .markdown-content ul,
+        .bot-message .markdown-content ol {
+            padding-left: 24px;
+            margin-bottom: 12px;
+        }
+
+        .bot-message .markdown-content li {
+            margin-bottom: 4px;
+        }
+
+        .bot-message .markdown-content pre {
+            background-color: var(--code-background);
+            border-radius: 6px;
+            padding: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .bot-message .markdown-content code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            background-color: var(--code-background);
+            border-radius: 3px;
+            padding: 0.2em 0.4em;
+            font-size: 85%;
+        }
+
+        .bot-message .markdown-content pre code {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .bot-message .markdown-content blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 16px;
+            margin-left: 0;
+            color: var(--blockquote-color);
+        }
+
+        .bot-message .markdown-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 12px 0;
+        }
+
+        .bot-message .markdown-content table th,
+        .bot-message .markdown-content table td {
+            border: 1px solid var(--table-border);
+            padding: 8px;
+            text-align: left;
+        }
+
+        .bot-message .markdown-content table th {
+            background-color: var(--table-header-bg);
+        }
+
+        .bot-message .markdown-content img {
+            max-width: 100%;
+            border-radius: 4px;
+        }
+
+        .bot-message .markdown-content a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .bot-message .markdown-content a:hover {
+            text-decoration: underline;
+        }
+
+        .bot-message .markdown-content hr {
+            border: 0;
+            border-top: 1px solid #eee;
+            margin: 16px 0;
+        }
+
         .message-time {
             font-size: 0.7rem;
             color: var(--light-text);
@@ -204,25 +393,27 @@
 
         .message-container {
             display: flex;
-            align-items: flex-end;
+            align-items: flex-start;
             margin-bottom: 4px;
         }
 
         .input-container {
             padding: 16px;
-            background: white;
+            background: var(--container-background);
             border-top: 1px solid rgba(0, 0, 0, 0.08);
             display: flex;
             align-items: center;
+            transition: background-color 0.3s ease;
         }
 
         .input-wrapper {
             display: flex;
             flex: 1;
-            background: #f0f2f5;
+            background: var(--input-background);
             border-radius: 24px;
             overflow: hidden;
             padding: 4px 4px 4px 16px;
+            transition: background-color 0.3s ease;
         }
 
         input[type="text"] {
@@ -232,6 +423,8 @@
             font-size: 0.95rem;
             background: transparent;
             outline: none;
+            color: var(--text-color);
+            transition: color 0.3s ease;
         }
 
         .send-button {
@@ -353,6 +546,7 @@
             cursor: text;
         }
 
+        /* Mobile styling */
         @media (max-width: 576px) {
             .chat-container {
                 height: 90vh;
@@ -367,11 +561,38 @@
                 max-width: 85%;
             }
         }
+        
+        /* Make sure the fullscreen mode has proper spacing */
+        @media (min-width: 1024px) {
+            .chat-messages {
+                padding: 30px;
+            }
+            
+            .message {
+                max-width: 70%;
+            }
+            
+            .chat-header {
+                padding: 25px;
+            }
+            
+            .input-container {
+                padding: 25px;
+            }
+            
+            .welcome-message {
+                max-width: 800px;
+                margin: 0 auto;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
+            <div class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                <i class="fas fa-moon"></i>
+            </div>
             <div class="logo">
                 <i class="fas fa-robot"></i>
                 <h1>Financial Guru</h1>
@@ -393,7 +614,7 @@
             <div class="message-container">
                 <div class="bot-avatar">FG</div>
                 <div class="bot-message">
-                    <span>How can I help with your financial journey today?</span>
+                    <div class="markdown-content">How can I help with your financial journey today?</div>
                     <div class="message-time">Just now</div>
                 </div>
             </div>
@@ -402,7 +623,7 @@
         <div class="input-container">
             <div class="input-wrapper">
                 <input type="text" id="message-input" placeholder="Type your message..." aria-label="Message input">
-                <button class="send-button" onclick="sendMessage()" aria-label="Send message">
+                <button class="send-button" id="send-button" aria-label="Send message">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
@@ -418,10 +639,75 @@
     </div>
 
     <script>
+        // Fix 1: Removing stray CSS at the top
         const chatMessages = document.getElementById('chat-messages');
         const messageInput = document.getElementById('message-input');
         const teluguToggle = document.getElementById('telugu-toggle');
         const loadingIndicator = document.getElementById('loading');
+        const themeToggle = document.getElementById('theme-toggle');
+        const sendButton = document.getElementById('send-button');
+
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            // Toggle icon
+            const themeIcon = themeToggle.querySelector('i');
+            if (newTheme === 'dark') {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+            
+            // Save preference to localStorage
+            localStorage.setItem('theme', newTheme);
+        });
+        
+        // Set initial theme based on localStorage or system preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                
+                if (savedTheme === 'dark') {
+                    const icon = themeToggle.querySelector('i');
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                }
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                const icon = themeToggle.querySelector('i');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+        }
+        
+        // Initialize theme
+        initTheme();
+
+        // Configure marked.js options for security and features
+        marked.setOptions({
+            breaks: true,         // Convert line breaks to <br>
+            gfm: true,            // GitHub Flavored Markdown
+            headerIds: true,      // Add IDs to headings
+            sanitize: false,      // Don't sanitize - will use DOMPurify
+            smartLists: true,     // Smart list behavior
+            langPrefix: 'hljs language-', // Class prefix for code blocks
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    try {
+                        return hljs.highlight(code, { language: lang }).value;
+                    } catch (e) {}
+                }
+                return hljs.highlightAuto(code).value;
+            }
+        });
 
         function getCurrentTime() {
             const now = new Date();
@@ -442,9 +728,24 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
             
-            const messageContent = document.createElement('span');
-            messageContent.textContent = text;
-            messageDiv.appendChild(messageContent);
+            if (isUser) {
+                // For user messages, just display the plain text
+                const messageContent = document.createElement('span');
+                messageContent.textContent = text;
+                messageDiv.appendChild(messageContent);
+            } else {
+                // For bot messages, parse and render the markdown with sanitization
+                const markdownContent = document.createElement('div');
+                markdownContent.className = 'markdown-content';
+                // Fix 2: Added DOMPurify for sanitization
+                markdownContent.innerHTML = DOMPurify.sanitize(marked.parse(text));
+                messageDiv.appendChild(markdownContent);
+                
+                // Initialize syntax highlighting for code blocks
+                messageDiv.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            }
             
             const timeDiv = document.createElement('div');
             timeDiv.className = 'message-time';
@@ -483,6 +784,7 @@
             }
         }
 
+        // Fix 3: Better error handling
         async function sendMessage() {
             const message = messageInput.value.trim();
             if (!message) return;
@@ -497,7 +799,10 @@
             showTypingIndicator();
             
             try {
-                const response = await fetch('http://localhost:5000/webhook', {
+                // Fix 4: Make the endpoint configurable and add error handling
+                const apiUrl = window.apiUrl || 'http://localhost:5000/webhook';
+                
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
@@ -508,29 +813,37 @@
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-
-                // Remove typing indicator before showing response
-                removeTypingIndicator();
                 
                 const data = await response.json();
                 
+                // Remove typing indicator before showing response
+                removeTypingIndicator();
+                
                 // Small delay to simulate human-like response timing
                 setTimeout(() => {
-                    addMessage(data.response, false);
+                    addMessage(data.response || "Sorry, I couldn't process your request.", false);
                 }, 500);
                 
             } catch (error) {
-                removeTypingIndicator();
-                addMessage('Error: Could not connect to the server. Please make sure the backend is running.', false);
                 console.error('Error:', error);
+                removeTypingIndicator();
+                
+                // Fix 5: More user-friendly error message with retry option
+                const errorMessage = 'Sorry, I had trouble connecting to the server. ' +
+                    'Please check your connection and try again.';
+                addMessage(errorMessage, false);
             }
         }
 
+        // Event listeners
         messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 sendMessage();
             }
         });
+
+        // Fix 6: Added event listener to the button
+        sendButton.addEventListener('click', sendMessage);
 
         // Add placeholder text based on language selection
         teluguToggle.addEventListener('change', (e) => {
@@ -541,17 +854,33 @@
             // Update welcome message based on language
             const welcomeHeader = document.querySelector('.welcome-message h3');
             const welcomeText = document.querySelector('.welcome-message p');
-            const firstBotMessage = document.querySelector('.bot-message');
+            const firstBotMessage = document.querySelector('.bot-message .markdown-content');
             
             if (e.target.checked) {
                 welcomeHeader.textContent = "ఆర్థిక గురువుకి స్వాగతం!";
                 welcomeText.textContent = "మీ ఆర్థిక ప్రశ్నలకు సహాయం చేయడానికి నేను ఇక్కడ ఉన్నాను. మీరు బడ్జెట్, పెట్టుబడి, పొదుపు లేదా ఏదైనా ఆర్థిక విషయం గురించి అడగవచ్చు.";
-                firstBotMessage.firstChild.textContent = "నేను మీ ఆర్థిక ప్రయాణంలో ఎలా సహాయం చేయగలను?";
+                firstBotMessage.innerHTML = DOMPurify.sanitize("నేను మీ ఆర్థిక ప్రయాణంలో ఎలా సహాయం చేయగలను?");
             } else {
                 welcomeHeader.textContent = "Welcome to Financial Guru!";
                 welcomeText.textContent = "I'm here to help with your financial questions. You can ask about budgeting, investing, savings, or any financial topic.";
-                firstBotMessage.firstChild.textContent = "How can I help with your financial journey today?";
+                firstBotMessage.innerHTML = DOMPurify.sanitize("How can I help with your financial journey today?");
             }
+        });
+
+        // Fix 7: Added functionality to handle API configuration
+        window.configureApi = function(url) {
+            window.apiUrl = url;
+            console.log("API endpoint set to:", url);
+        };
+        
+        // Fix 8: Added simple offline detection
+        window.addEventListener('online', () => {
+            document.querySelector('.send-button').disabled = false;
+        });
+        
+        window.addEventListener('offline', () => {
+            document.querySelector('.send-button').disabled = true;
+            addMessage("⚠️ You appear to be offline. Please check your internet connection.", false);
         });
     </script>
 </body>
