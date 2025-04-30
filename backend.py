@@ -53,7 +53,7 @@ def get_ai_response(prompt, lang='en'):
         
         # Prepare the prompt with language instruction
         if is_telugu:
-            system_prompt = "You are a helpful financial literacy assistant. Please respond in Telugu language using Telugu script. Answer this question: "
+            system_prompt = "You are a helpful financial literacy assistant. Please respond in Telugu language using Telugu script. Use simple telugu words to answer. Answer this question: "
         else:
             system_prompt = "You are a helpful financial literacy assistant. Answer this question: "
         
